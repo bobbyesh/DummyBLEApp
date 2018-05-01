@@ -1,6 +1,15 @@
 package com.example.bek.dummybleapp;
 
+import android.util.Log;
+import android.util.Pair;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class ScanRecordParser {
+    private static final String TAG = ScanRecordParser.class.getSimpleName();
+
     public static final int FLAG = 0x01;
     public static final int INCOMPLETE_SERVICE_CLASS_UUIDS = 0x02;
     public static final int COMPLETE_SERVICE_CLASS_UUIDS = 0x03;
@@ -93,5 +102,39 @@ public class ScanRecordParser {
             default:
                 return "Unknown type: " + String.format("0x%02x", type);
         }
+    }
+
+    static String deviceNameFromManufacturerData(byte[] manufacturerSpecificData) {
+        /*
+        Example Scan Record:
+        216 3327 181516271853696c6162734465762da9ba199ffd9000000000000000000000000000000000000
+         */
+        StringBuilder sb = new StringBuilder();
+        for (byte b: manufacturerSpecificData) {
+            sb.append(Byte.toString(b));
+
+        }
+        return sb.toString();
+    }
+
+    static ArrayList<Pair<Integer, byte[]>> packetize(byte[] bytes) {
+        ArrayList<Pair<Integer, byte[]>> list = new ArrayList<>();
+
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+
+        while(bb.position() < bytes.length) {
+            int length = bb.get() & 0xFF;
+            if (length <= 1) {
+                break;
+            }
+            int type = bb.get() & 0xFF;
+
+            byte[] payload = new byte[length-1];
+            bb.get(payload);
+
+            list.add(new Pair<>(type & 0xFF, payload));
+        }
+
+        return list;
     }
 }
