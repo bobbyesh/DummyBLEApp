@@ -28,7 +28,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     BluetoothManager bluetoothManager;
@@ -53,23 +53,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         attachListeners();
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        ScannedDevice device = scannedDevices.get(position);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(DeviceActivity.EXTRA_DEVICE, device);
-
-        Intent intent = new Intent(this, DeviceActivity.class);
-        intent.putExtras(bundle);
-        startActivity(intent);
-    }
-
     private void initializeUI() {
         scanButton = findViewById(R.id.scan_button);
         stopScanButton = findViewById(R.id.stop_scan_button);
         listView = findViewById(R.id.list_view);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(this);
     }
 
     private void attachListeners() {
@@ -91,6 +79,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onClick(View v) {
                 bluetoothLeScanner.stopScan(callback);
                 Log.d(TAG, "----------------------> STOP Scan <---------------------------");
+            }
+        });
+
+        final MainActivity self = this;
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ScannedDevice device = scannedDevices.get(position);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(DeviceActivity.EXTRA_DEVICE, device);
+                Intent intent = new Intent(self, DeviceActivity.class);
+                intent.putExtras(bundle);
+                bluetoothLeScanner.stopScan(callback);
+                startActivity(intent);
             }
         });
     }
