@@ -10,17 +10,13 @@ import com.example.bek.dummybleapp.utils.ByteStringBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class UnprovisionedDeviceScanner {
-}
-
-
-class UnprovisionedBeaconScanCallBack extends ScanCallback {
-    private static final String TAG = UnprovisionedBeaconScanCallBack.class.getSimpleName();
+class UnprovisionedBeaconScanCallback extends ScanCallback {
+    private static final String TAG = UnprovisionedBeaconScanCallback.class.getSimpleName();
 
     private ScanResultAdapter adapter;
     private ArrayList<ScannedDevice> previouslyScannedDevices;
 
-    UnprovisionedBeaconScanCallBack(ScanResultAdapter adapter, ArrayList<ScannedDevice> previouslyScannedDevices) {
+    UnprovisionedBeaconScanCallback(ScanResultAdapter adapter, ArrayList<ScannedDevice> previouslyScannedDevices) {
         this.adapter = adapter;
         this.previouslyScannedDevices = previouslyScannedDevices;
     }

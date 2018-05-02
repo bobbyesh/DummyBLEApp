@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -26,7 +28,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     BluetoothManager bluetoothManager;
@@ -51,15 +53,27 @@ public class MainActivity extends AppCompatActivity {
         attachListeners();
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ScannedDevice device = scannedDevices.get(position);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(DeviceActivity.EXTRA_DEVICE, device);
+
+        Intent intent = new Intent(this, DeviceActivity.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
     private void initializeUI() {
         scanButton = findViewById(R.id.scan_button);
         stopScanButton = findViewById(R.id.stop_scan_button);
         listView = findViewById(R.id.list_view);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(this);
     }
 
     private void attachListeners() {
-        final ScanCallback callback = new UnprovisionedBeaconScanCallBack(adapter, scannedDevices);
+        final ScanCallback callback = new UnprovisionedBeaconScanCallback(adapter, scannedDevices);
 
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override

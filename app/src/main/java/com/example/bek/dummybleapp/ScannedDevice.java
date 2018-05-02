@@ -2,6 +2,8 @@ package com.example.bek.dummybleapp;
 
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Pair;
@@ -13,7 +15,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-class ScannedDevice implements Comparable<ScannedDevice> {
+class ScannedDevice implements Comparable<ScannedDevice>, Parcelable {
     private final static String TAG = ScannedDevice.class.getSimpleName();
     private String macAddress;
     private ArrayList<ScanResult> results;
@@ -21,6 +23,16 @@ class ScannedDevice implements Comparable<ScannedDevice> {
     ScannedDevice(String macAddress) {
         this.macAddress = macAddress;
         this.results = new ArrayList<>();
+    }
+
+    private ScannedDevice(Parcel in) {
+        macAddress = in.readString();
+        int size = in.readInt();
+        results = new ArrayList<>();
+        for (int i=0; i<size; i++) {
+            ScanResult result = in.readParcelable(ScanResult.class.getClassLoader());
+            results.add(result);
+        }
     }
 
     public ArrayList<ScanResult> getScanResults() {
@@ -134,6 +146,33 @@ class ScannedDevice implements Comparable<ScannedDevice> {
             int lhsRssi = Collections.max(lhs.getRssiList());
             int rhsRssi = Collections.max(rhs.getRssiList());
             return Integer.compare(rhsRssi, lhsRssi);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<ScannedDevice> CREATOR = new Parcelable.Creator<ScannedDevice>() {
+        @Override
+        public ScannedDevice createFromParcel(Parcel in) {
+            return new ScannedDevice(in);
+        }
+
+        @Override
+        public ScannedDevice[] newArray(int size) {
+            return new ScannedDevice[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(macAddress);
+        dest.writeInt(results.size());
+        for (ScanResult result: results) {
+            dest.writeParcelable(result, flags);
         }
     }
 }
