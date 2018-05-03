@@ -104,8 +104,8 @@ class OtaDataBluetoothGattCallback extends BluetoothGattCallback {
     private final UUID controlCharacteristicUuid = ProvoltGattAttributes.OTA_CONTROL.getUuid();
     private final UUID crcCharacteristicUuid = ProvoltGattAttributes.OTA_CRC.getUuid();
 
-    private static final byte OTA_CONTROL_START  = 0;
-    private static final byte OTA_CONTROL_END  = 1;
+    private static final byte OTA_CONTROL_START = 0;
+    private static final byte OTA_CONTROL_END = 1;
 
     OtaDataBluetoothGattCallback(DeviceActivity context, BluetoothDevice device, ByteBuffer otaDataBytes, int mtuSize) {
         this.otaByteBuffer = otaDataBytes;
@@ -212,9 +212,9 @@ class OtaDataBluetoothGattCallback extends BluetoothGattCallback {
             } else if (characteristic.getUuid().equals(controlCharacteristicUuid)) {
                 Log.d(TAG, "Succesfful control characteristic write");
                 byte[] controlValues = characteristic.getValue();
-                if(controlValues[0] == OTA_CONTROL_START) {
+                if (controlValues[0] == OTA_CONTROL_START) {
                     writeOtaDataPDU(gatt, dataCharacteristic);
-                } else if (controlValues[0] == OTA_CONTROL_END){
+                } else if (controlValues[0] == OTA_CONTROL_END) {
                     readCrc();
                 }
             }
@@ -229,20 +229,32 @@ class OtaDataBluetoothGattCallback extends BluetoothGattCallback {
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicRead(gatt, characteristic, status);
         Log.d(TAG, "onReadCharacteristic");
-        if(characteristic.getUuid().equals(crcCharacteristicUuid)) {
+        if (characteristic.getUuid().equals(crcCharacteristicUuid)) {
             Log.d(TAG, "characteristic == ota CRC");
             ByteStringBuilder bsb = new ByteStringBuilder();
             byte[] bytes = characteristic.getValue();
             bsb.append(bytes);
+            Log.d(TAG, "remote == " + bsb.toString());
 
             long remoteCrc = (long) ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16) | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF);
+            long localCrc = crc.getValue();
+            byte[] localCrcBytes = new byte[4];
+            for (int i = 0; i < 4; i++) {
+                localCrcBytes[4 - 1 - i] = (byte) ((localCrc >> (i * 8)) & 0xFF);
+            }
 
+            bsb = new ByteStringBuilder();
+            bsb.append(localCrcBytes);
+            Log.d(TAG, "local == " + bsb.toString());
+            Log.d(TAG, "CRC passed? " + (Arrays.equals(localCrcBytes, bytes)));
+
+            /*
             Log.d(TAG, "CRC from local == " + crc.getValue());
             Log.d(TAG, "CRC (hex) from local == " + Long.toHexString(crc.getValue()));
             Log.d(TAG, "CRC from remote == " + remoteCrc);
             Log.d(TAG, "CRC (hex) from remote == " + Long.toHexString(remoteCrc));
-            Log.d(TAG, "CRC passed? " + (remoteCrc == crc.getValue()));
             Log.d(TAG, "CRC (as bytes) from remote == " + bsb.toString());
+            */
         }
     }
 
