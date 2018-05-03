@@ -10,8 +10,9 @@ public class ByteStringBuilder {
 
     public ByteStringBuilder append(byte[] bytes) {
         for(byte b: bytes) {
-            String hex = String.format("%x", b & 0xFF);
+            String hex = String.format("%02x", b & 0xFF);
             sb.append(hex);
+            sb.append(" ");
         }
 
         return this;
